@@ -1,4 +1,4 @@
-module github.com/eugen252009/loginserver
+module github.com/eugen252009/login_microservice
 
 go 1.22.0
 
