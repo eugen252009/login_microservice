@@ -2,67 +2,54 @@ package main
 
 import (
 	"fmt"
-	"github.com/google/uuid"
+	"log"
 	"net/http"
-	"time"
+
+	"github.com/google/uuid"
 )
 
-func main() {
-	router := makeRouter()
-	panic(http.ListenAndServe(":8080", router))
-}
+var LoginQuery = "select id,name from nutzer where id=$1"
 
-func makeRouter() *http.ServeMux {
-	router := http.NewServeMux()
-
-	router.HandleFunc("/", index)
-	router.HandleFunc("/login", login)
-	router.HandleFunc("/register", register)
-	router.HandleFunc("/update", update)
-
-	return router
-}
-
-func index(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hallo Index!"))
-}
-func login(w http.ResponseWriter, r *http.Request) {
-	access, err := r.Cookie("access")
-	reroll, err := r.Cookie("reroll")
-	user, err := r.Cookie("user")
-	session, err := r.Cookie("session")
+func Login(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
 	if err != nil {
-		w.Write([]byte(err.Error()))
-		return
+		log.Printf("error Occured while parsing form\n %s", err)
 	}
-	w.Write([]byte(fmt.Sprintf("access:%s reroll:%s user:%s session:%s", access.Name, reroll.Name, user.Name, session.Name)))
+	log.Printf(r.FormValue("user"))
+	log.Printf(r.FormValue("password"))
+	uuidstring := uuid.NewString()
+	w.Header().Add("Authorization", uuidstring)
+	w.WriteHeader(200)
+	w.Write([]byte(uuidstring))
+	// http.SetCookie(w, &http.Cookie{Name: "session", Value: uuidstring})
 }
-
-// ACCESSTOKEN
-// REROLL TOKEN
-// USER
-// Session
 
 func register(w http.ResponseWriter, r *http.Request) {
+	username, passowrd, ok := r.BasicAuth()
+	if ok {
+		fmt.Println(username, passowrd)
+	}
 	a := uuid.NewString()
+	w.WriteHeader(200)
 	w.Write([]byte(fmt.Sprintf("%s", a)))
 }
-func update(w http.ResponseWriter, r *http.Request) {
-	reroll, err := r.Cookie("reroll")
-	user, err := r.Cookie("user")
-	session, err := r.Cookie("session")
-	if err != nil {
-		w.Write([]byte(err.Error()))
-		return
-	}
-	cookie := &http.Cookie{
-		Name:     "auth",
-		Value:    uuid.NewString(),
-		Path:     "/",
-		HttpOnly: true,
-		MaxAge:   60 * 15,
-		Expires:  time.Now().Add(time.Minute * 15),
-	}
-	http.SetCookie(w, cookie)
-	w.Write([]byte(fmt.Sprintf("Hallo Update! %s %s %s", reroll, user, session)))
-}
+
+// func update(w http.ResponseWriter, r *http.Request) {
+// 	reroll, err := r.Cookie("reroll")
+// 	user, err := r.Cookie("user")
+// 	session, err := r.Cookie("session")
+// 	if err != nil {
+// 		w.Write([]byte(err.Error()))
+// 		return
+// 	}
+// 	cookie := &http.Cookie{
+// 		Name:     "auth",
+// 		Value:    uuid.NewString(),
+// 		Path:     "/",
+// 		HttpOnly: true,
+// 		MaxAge:   60 * 15,
+// 		Expires:  time.Now().Add(time.Minute * 15),
+// 	}
+// 	http.SetCookie(w, cookie)
+// 	w.Write([]byte(fmt.Sprintf("Hallo Update! %s %s %s", reroll, user, session)))
+// }

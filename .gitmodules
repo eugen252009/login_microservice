@@ -1,3 +1,0 @@
-[submodule "module/go-lib"]
-	path = module/go-lib
-	url = git@github.com:Eugen252009/go-lib.git
